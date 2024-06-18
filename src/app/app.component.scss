@@ -1,0 +1,42 @@
+#new-connection,
+#error,
+#progress,
+#issuance_progress,
+#presentation_progress {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.252);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    #status {
+        padding: 20px;
+        background: white;
+        border-radius: 25px;
+
+        &.progress {
+            background: none;
+        }
+
+        h1,
+        h3 {
+            width: 100%;
+            text-align: center;
+        }
+    }
+}
+
+#error {
+    z-index: 101;
+}
+
+mat-form-field {
+    width: 100%;
+}

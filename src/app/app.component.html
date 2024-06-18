@@ -1,0 +1,343 @@
+<mat-toolbar color="primary">
+    <span>OCM Command Center</span>
+    <span style="flex: 1 1 auto;"></span>
+    <span>{{connection}}</span>
+    <button mat-icon-button aria-label="Connect a PCM App" (click)="startConnectionFlow()" *ngIf="!connection">
+        <mat-icon>link</mat-icon>
+    </button>
+    <button mat-icon-button aria-label="Connect a PCM App" (click)="disconnect()" *ngIf="connection">
+        <mat-icon>link_off</mat-icon>
+    </button>
+</mat-toolbar>
+
+
+
+<div style="padding: 20px 50px">
+
+    <mat-form-field style="width: auto;">
+        <mat-label>Active OCM</mat-label>
+        <mat-select [(value)]="activeOCMConfig" (selectionChange)="activeOCMChanged()">
+            @for (ocmConfig of ocmConfigs; track ocmConfig) {
+            <mat-option [value]="ocmConfig">{{ocmConfig.name}}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+
+    <mat-accordion *ngIf="federationLoginSchema">
+        <mat-expansion-panel *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    Login Schema
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+            <mat-card style="margin-bottom: 20px;">
+                <mat-card-header>
+                    <mat-card-title>{{federationLoginSchema.name}}</mat-card-title>
+                    <!-- <mat-card-subtitle>{{schema.id}}</mat-card-subtitle> -->
+                    <mat-card-subtitle>Schema ID: {{federationLoginSchema.schemaID}}</mat-card-subtitle>
+                    <button mat-icon-button
+                        (click)="copyToClipboard(federationLoginSchema.schemaID); scrollToCredDefCreationForm()">
+                        <mat-icon
+                            *ngIf="!copied || federationLoginSchema.schemaID != copiedText">content_copy</mat-icon>
+                        <mat-icon *ngIf="copied && federationLoginSchema.schemaID == copiedText">check</mat-icon>
+                    </button>
+                    <mat-card-subtitle *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)">CredDef ID:
+                        {{credentialDefinitions.get(federationLoginSchema.schemaID)?.credDefId}}</mat-card-subtitle>
+                    <mat-card-subtitle *ngIf="!credentialDefinitions.get(federationLoginSchema.schemaID)"
+                        style="color: red">Has no
+                        CredDefId</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <mat-chip-set cdkDropList cdkDropListOrientation="horizontal">
+                        <mat-chip
+                            *ngFor="let attribute of federationLoginSchema.attribute">{{attribute.name}}</mat-chip>
+                    </mat-chip-set>
+
+                    <br>
+
+                    <mat-accordion>
+                        <mat-expansion-panel *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>
+                                    Issuance
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <form *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)"
+                                [formGroup]="issuanceForms[federationLoginSchema.schemaID]"
+                                (ngSubmit)="onIssuanceFormSubmit(federationLoginSchema)">
+                                <mat-form-field>
+                                    <mat-label>Comment</mat-label>
+                                    <input matInput formControlName="comment" required>
+                                </mat-form-field>
+
+                                <div formArrayName="attributes">
+                                    <div *ngFor="let attribute of getAttributes(federationLoginSchema.schemaID).controls; let I = index"
+                                        [formGroupName]="I">
+                                        <mat-form-field>
+                                            <mat-label>{{ attribute.get('name')?.value }}</mat-label>
+
+                                            <!-- Conditionally render input or select based on the attribute name -->
+                                            <ng-container [ngSwitch]="attribute.get('name')?.value">
+                                                <!-- If the attribute is Role, show a select with roles -->
+                                                <mat-select *ngSwitchCase="'Role'" formControlName="value" required>
+                                                    <mat-option *ngFor="let role of roles" [value]="role">{{ role
+                                                        }}</mat-option>
+                                                </mat-select>
+
+                                                <!-- If the attribute is Organisation, show a select with organizations -->
+                                                <mat-select *ngSwitchCase="'Organisation'" formControlName="value"
+                                                    required>
+                                                    <mat-option *ngFor="let org of organizations" [value]="org">{{ org
+                                                        }}</mat-option>
+                                                </mat-select>
+
+                                                <!-- Default case: show a text input -->
+                                                <input *ngSwitchDefault matInput formControlName="value" required>
+                                            </ng-container>
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+
+                                <button mat-raised-button type="submit">Issue Credential</button>
+
+
+                            </form>
+                        </mat-expansion-panel>
+                        <mat-expansion-panel>
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>
+                                    Presentation
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <button mat-raised-button color="primary"
+                                (click)="requestPresentationForSchema(federationLoginSchema)">Request
+                                Presentation</button>
+                        </mat-expansion-panel>
+                    </mat-accordion>
+
+
+
+
+                </mat-card-content>
+            </mat-card>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+
+    <!-- <mat-card>
+        <mat-card-header>
+            <mat-card-title>Actions Buttons</mat-card-title>
+            <mat-card-subtitle>End</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-actions align="end">
+            <button mat-button (click)="openSnackBar('test')">LIKE</button>
+        </mat-card-actions>
+    </mat-card> -->
+    <br>
+    <mat-accordion>
+        <mat-expansion-panel>
+            <mat-expansion-panel-header>
+                <mat-panel-title>Create Schema</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <form [formGroup]="schemaForm" (ngSubmit)="onCreateSchemaSubmit()">
+                <mat-form-field>
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" required>
+                </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>Created By</mat-label>
+                    <input matInput formControlName="createdBy" required>
+                </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>Version</mat-label>
+                    <input matInput formControlName="version" required>
+                </mat-form-field>
+
+                <div formArrayName="attributes">
+                    <div *ngFor="let attribute of attributes.controls; let i = index" [formGroupName]="i">
+                        <mat-form-field>
+                            <mat-label>Attribute</mat-label>
+                            <input matInput formControlName="name" required>
+                        </mat-form-field>
+                        <button mat-button color="warn" (click)="removeAttribute(i)">Remove</button>
+                    </div>
+                </div>
+
+                <button mat-button (click)="addAttribute()">Add Attribute</button>
+                <button mat-raised-button color="primary" type="submit">Create Schema</button>
+            </form>
+        </mat-expansion-panel>
+    </mat-accordion>
+    <br>
+
+    <mat-accordion id="credDefForm">
+        <mat-expansion-panel>
+            <mat-expansion-panel-header>
+                <mat-panel-title>Create Credential Definition</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <form [formGroup]="credentialDefinitionForm" (ngSubmit)="onCreateCredDefSubmit()">
+                <mat-form-field style="width: 100%;">
+                    <mat-label>Schema ID</mat-label>
+                    <input matInput formControlName="schemaID" required>
+                </mat-form-field>
+                <br>
+
+                <mat-form-field>
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" required>
+                </mat-form-field>
+                <br>
+
+                <mat-form-field>
+                    <mat-label>Created By</mat-label>
+                    <input matInput formControlName="createdBy" required>
+                </mat-form-field>
+                <br>
+
+                <mat-label>Is Revokable</mat-label>
+                <mat-checkbox formControlName="isRevokable"></mat-checkbox>
+                <br>
+
+                <mat-label>Is Auto Issue</mat-label>
+                <mat-checkbox formControlName="isAutoIssue"></mat-checkbox>
+                <br>
+
+                <mat-form-field>
+                    <mat-label>Expiry Hours</mat-label>
+                    <input matInput type="number" formControlName="expiryHours" required>
+                </mat-form-field>
+                <br>
+
+                <button mat-raised-button color="primary" type="submit">Create Credential Definition</button>
+
+
+            </form>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+    <br><br>
+    <h2>Schemas</h2>
+
+
+    <mat-paginator #paginator class="demo-paginator" (page)="handlePageEvent($event)" [length]="paginatorLength"
+        [pageSize]="paginatorPageSize" [showFirstLastButtons]="false" [pageSizeOptions]="paginatorPageSizeOptions"
+        [pageIndex]="paginatorPageIndex" aria-label="Select page">
+    </mat-paginator>
+
+    <div *ngFor="let schema of schemasToDisplay">
+        <mat-card style="margin-bottom: 20px;" *ngIf="schema">
+            <mat-card-header>
+                <mat-card-title>{{schema.name}}</mat-card-title>
+                <!-- <mat-card-subtitle>{{schema.id}}</mat-card-subtitle> -->
+                <mat-card-subtitle>Schema ID: {{schema.schemaID}}</mat-card-subtitle>
+                <button mat-icon-button (click)="copyToClipboard(schema.schemaID); scrollToCredDefCreationForm()">
+                    <mat-icon *ngIf="!copied || schema.schemaID != copiedText">content_copy</mat-icon>
+                    <mat-icon *ngIf="copied && schema.schemaID == copiedText">check</mat-icon>
+                </button>
+                <mat-card-subtitle *ngIf="credentialDefinitions.get(schema.schemaID)">CredDef ID:
+                    {{credentialDefinitions.get(schema.schemaID)?.credDefId}}</mat-card-subtitle>
+                <mat-card-subtitle *ngIf="!credentialDefinitions.get(schema.schemaID)" style="color: red">Has no
+                    CredDefId</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <mat-chip-set cdkDropList cdkDropListOrientation="horizontal">
+                    <mat-chip *ngFor="let attribute of schema.attribute">{{attribute.name}}</mat-chip>
+                </mat-chip-set>
+
+                <br>
+
+                <mat-accordion>
+                    <mat-expansion-panel *ngIf="credentialDefinitions.get(schema.schemaID)">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Issuance
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <form *ngIf="credentialDefinitions.get(schema.schemaID)"
+                            [formGroup]="issuanceForms[schema.schemaID]" (ngSubmit)="onIssuanceFormSubmit(schema)">
+                            <mat-form-field>
+                                <mat-label>Comment</mat-label>
+                                <input matInput formControlName="comment" required>
+                            </mat-form-field>
+
+                            <div formArrayName="attributes">
+                                <div *ngFor="let attribute of getAttributes(schema.schemaID).controls; let i = index"
+                                    [formGroupName]="i">
+                                    <mat-form-field>
+                                        <mat-label>{{ attribute.get('name')?.value }}</mat-label>
+                                        <input matInput formControlName="value" required>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+
+                            <button mat-raised-button type="submit">Issue Credential</button>
+
+
+                        </form>
+                    </mat-expansion-panel>
+                    <mat-expansion-panel>
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Presentation
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <button mat-raised-button color="primary" (click)="requestPresentationForSchema(schema)">Request
+                            Presentation</button>
+                    </mat-expansion-panel>
+                </mat-accordion>
+
+
+
+
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>
+
+<div id="new-connection" *ngIf="connectionStatus != ''">
+    <div id="status">
+        <qrcode [qrdata]="invitationUrl" [width]="512" [errorCorrectionLevel]="'M'"></qrcode>
+        <h1 *ngIf="invitationUrl">Scan this code with your PCM app</h1>
+        <h3>{{connectionStatus}}</h3>
+    </div>
+</div>
+
+<div id="error" *ngIf="error">
+    <div id="status">
+        <h2>Error:</h2>
+        <pre>
+            {{error | json}}
+        </pre>
+        <button mat-raised-button (click)="error = null">Dismiss</button>
+    </div>
+</div>
+
+<div id="issuance_progress" *ngIf="issuanceProgress">
+    <div id="status">
+        <h2>Progress:</h2>
+        <pre>
+            {{issuanceProgress | json}}
+        </pre>
+        <button mat-raised-button (click)="issuanceProgress = null">Dismiss</button>
+    </div>
+</div>
+
+<div id="presentation_progress" *ngIf="presentationProgress">
+    <div id="status">
+        <h2>Progress:</h2>
+        <pre>
+            {{jsonToPrettyString(presentationProgress)}}
+        </pre>
+        <button mat-raised-button (click)="presentationProgress = null">Dismiss</button>
+    </div>
+</div>
+
+<div id="progress" *ngIf="showProgress">
+    <div id="status" class="progress">
+        <mat-spinner></mat-spinner>
+    </div>
+</div>
