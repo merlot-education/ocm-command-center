@@ -7,7 +7,7 @@ RUN echo '//npm.pkg.github.com/:_authToken=${NPM_CONFIG_TOKEN}' >> ~/.npmrc
 WORKDIR /app
 
 COPY . .
-RUN sh -c 'npm ci'
+RUN npm ci
 RUN npm run ng -- build --configuration $ENVIRONMENT
 
 FROM nginx:stable-alpine
