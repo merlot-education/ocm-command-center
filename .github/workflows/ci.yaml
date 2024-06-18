@@ -64,4 +64,4 @@ jobs:
           curl -H "Accept: application/vnd.github+json" \
           -H "Authorization: token ${{ secrets.GIT_OPS_TOKEN }}" \
           --request POST \
-          --data '{"event_type": "image_update", "client_payload": { "environment": "${{ env.environment }}", "tag": "${{ env.tag }}", "key": ".image.tag", "app": "mock-ses" }}' https://api.github.com/repos/merlot-education/gitops/dispatches
+          --data '{"event_type": "image_update", "client_payload": { "environment": "${{ env.environment }}", "tag": "${{ env.tag }}", "key": ".image.tag", "app": "ocm-command-center" }}' https://api.github.com/repos/merlot-education/gitops/dispatches
