@@ -20,6 +20,8 @@
         padding: 20px;
         background: white;
         border-radius: 25px;
+        max-width: 90%;
+        overflow: scroll;
 
         &.progress {
             background: none;
