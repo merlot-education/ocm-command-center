@@ -336,7 +336,7 @@
     </div>
 </div>
 
-<div id="progress" *ngIf="showProgress">
+<div id="progress" *ngIf="showProgress" (click)="showProgress = false">
     <div id="status" class="progress">
         <mat-spinner></mat-spinner>
     </div>
