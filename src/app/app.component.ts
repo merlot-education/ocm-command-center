@@ -162,19 +162,20 @@ export class AppComponent {
                     console.log(response);
 
                     response.content.forEach((element: any) => {
-                        let credentialSubject =
-                            element.selfDescription.verifiableCredential
-                                .credentialSubject;
-                        let organizationName =
-                            credentialSubject['gax-trust-framework:legalName'][
-                                '@value'
-                            ];
-                        this.organizations.push(organizationName);
-
-                        this.organizationMap.set(
-                            organizationName,
-                            credentialSubject['@id']
-                        );
+                        let credentials = element.selfDescription.verifiableCredential;
+                        if (Array.isArray(credentials)) {
+                            for (let vc of credentials) {
+                                if (!Array.isArray(vc.credentialSubject) && vc.credentialSubject.type === "merlot:MerlotLegalParticipant") {
+                                let organizationName = vc.credentialSubject['merlot:legalName'];
+                                this.organizations.push(organizationName);
+                                this.organizationMap.set(organizationName, vc.credentialSubject['id']);
+                                }
+                            }
+                        } else {
+                            let organizationName = credentials.credentialSubject['gax-trust-framework:legalName']["@value"];
+                            this.organizations.push(organizationName);
+                            this.organizationMap.set(organizationName, credentials.credentialSubject['@id']);
+                        }
                     });
 
                     this.organization = this.organizations[0];
