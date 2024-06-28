@@ -11,7 +11,7 @@ RUN npm ci
 RUN npm run ng -- build --configuration $ENVIRONMENT
 
 FROM nginx:stable-alpine
-COPY --from=build /app/dist/ocm-command-center /usr/share/nginx/html
+COPY --from=build /app/dist/ocm-command-center/browser /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
