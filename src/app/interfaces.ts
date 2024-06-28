@@ -3,6 +3,7 @@ export interface OCMConfig {
     attestationManagerURL: string;
     connectionManagerURL: string;
     proofManagerURL: string;
+    loginSchemaId: string;
 }
 
 export interface Schema {

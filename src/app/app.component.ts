@@ -211,6 +211,9 @@ export class AppComponent {
     }
 
     activeOCMChanged() {
+        this.schemas = [];
+        this.schemasToDisplay = [];
+        this.credentialDefinitions = new Map();
         window.localStorage.setItem('active-ocm', this.activeOCMConfig.name);
         this.ngOnInit();
     }
@@ -414,7 +417,7 @@ export class AppComponent {
     async updateSchemas() {
         new Promise((resolve, reject) => {
             this.listSchemas().subscribe({
-                next: (response) => {
+                next: async (response) => {
                     if (response.statusCode == 200) {
                         this.paginatorLength = response.data.count;
                         this.schemas = response.data.records;
@@ -446,9 +449,8 @@ export class AppComponent {
                             this.issuanceForms[schema.schemaID] = formGroup;
 
                             if (
-                                environment.loginSchemaIds.includes(
-                                    schema.schemaID
-                                )
+                                this.activeOCMConfig.loginSchemaId ==
+                                schema.schemaID
                             ) {
                                 this.federationLoginSchema = schema;
                                 const randomUserNumber = Math.floor(
@@ -560,7 +562,7 @@ export class AppComponent {
                             }
                         });
 
-                        this.updateSchemasToDisplay();
+                        await this.updateSchemasToDisplay();
                     }
 
                     return resolve(0);
@@ -576,16 +578,20 @@ export class AppComponent {
     }
 
     updateSchemasToDisplay() {
-        this.schemasToDisplay = [];
-        for (
-            let i = this.paginatorPageIndex * this.paginatorPageSize;
-            i <
-            this.paginatorPageIndex * this.paginatorPageSize +
-                this.paginatorPageSize;
-            i++
-        ) {
-            this.schemasToDisplay.push(this.schemas[i]);
-        }
+        new Promise((resolve, reject) => {
+            this.schemasToDisplay = [];
+            for (
+                let i = this.paginatorPageIndex * this.paginatorPageSize;
+                i <
+                this.paginatorPageIndex * this.paginatorPageSize +
+                    this.paginatorPageSize;
+                i++
+            ) {
+                this.schemasToDisplay.push(this.schemas[i]);
+            }
+
+            return resolve(1);
+        });
     }
 
     onCreateCredDefSubmit(): void {
