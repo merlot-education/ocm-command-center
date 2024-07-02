@@ -8,6 +8,8 @@ export const environment = {
             connectionManagerURL:
                 'https://ocm.demo.merlot-education.eu/connection/v1/',
             proofManagerURL: 'https://ocm.demo.merlot-education.eu/proof/v1/',
+            loginSchemaId:
+                'UaT2udeT53Tr1n6itV46Z:2:MerlotLoginDemo250624:1.0.0',
         },
         {
             name: 'merlot-ocm-dev',
@@ -16,6 +18,8 @@ export const environment = {
             connectionManagerURL:
                 'https://ocm.dev.merlot-education.eu/connection/v1/',
             proofManagerURL: 'https://ocm.dev.merlot-education.eu/proof/v1/',
+            loginSchemaId:
+                'K8j8nFTijJTCsFwrRNE3Df:2:MerlotLoginDev250624:1.0.0',
         },
         {
             name: 'blabby-agent',
@@ -23,12 +27,9 @@ export const environment = {
                 'https://blabby-agent.jumpy.dev/attestation/',
             connectionManagerURL: 'https://blabby-agent.jumpy.dev/connection/',
             proofManagerURL: 'https://blabby-agent.jumpy.dev/proof/',
+            loginSchemaId: '',
         },
     ],
     orgsAPI:
         'https://api.demo.merlot-education.eu/organisations/?page=0&size=50',
-    loginSchemaIds: [
-        '7KuDTpQh3GJ7Gp6kErpWvM:2:MerlotFederationLoginDemo:1.0.0',
-        '7KuDTpQh3GJ7Gp6kErpWvM:2:MerlotFederationLoginDev:1.0.0',
-    ],
 };

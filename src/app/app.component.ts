@@ -80,7 +80,8 @@ export class AppComponent {
     credentialDefinitions: Map<string, CredentialDefinition> = new Map();
 
     error: any;
-    copied = false;
+    copiedSchemaID = false;
+    copiedCredDefId = false;
     copiedText: string = '';
 
     showProgress = false;
@@ -162,19 +163,36 @@ export class AppComponent {
                     console.log(response);
 
                     response.content.forEach((element: any) => {
-                        let credentials = element.selfDescription.verifiableCredential;
+                        let credentials =
+                            element.selfDescription.verifiableCredential;
                         if (Array.isArray(credentials)) {
                             for (let vc of credentials) {
-                                if (!Array.isArray(vc.credentialSubject) && vc.credentialSubject.type === "merlot:MerlotLegalParticipant") {
-                                let organizationName = vc.credentialSubject['merlot:legalName'];
-                                this.organizations.push(organizationName);
-                                this.organizationMap.set(organizationName, vc.credentialSubject['id']);
+                                if (
+                                    !Array.isArray(vc.credentialSubject) &&
+                                    vc.credentialSubject.type ===
+                                        'merlot:MerlotLegalParticipant'
+                                ) {
+                                    let organizationName =
+                                        vc.credentialSubject[
+                                            'merlot:legalName'
+                                        ];
+                                    this.organizations.push(organizationName);
+                                    this.organizationMap.set(
+                                        organizationName,
+                                        vc.credentialSubject['id']
+                                    );
                                 }
                             }
                         } else {
-                            let organizationName = credentials.credentialSubject['gax-trust-framework:legalName']["@value"];
+                            let organizationName =
+                                credentials.credentialSubject[
+                                    'gax-trust-framework:legalName'
+                                ]['@value'];
                             this.organizations.push(organizationName);
-                            this.organizationMap.set(organizationName, credentials.credentialSubject['@id']);
+                            this.organizationMap.set(
+                                organizationName,
+                                credentials.credentialSubject['@id']
+                            );
                         }
                     });
 
@@ -218,12 +236,21 @@ export class AppComponent {
         this.ngOnInit();
     }
 
-    copyToClipboard(text: string) {
+    copyToClipboardSchemaId(text: string) {
         this.copiedText = text;
         this.clipboard.copy(text);
-        this.copied = true;
+        this.copiedSchemaID = true;
         setTimeout(() => {
-            this.copied = false;
+            this.copiedSchemaID = false;
+        }, 500); // 1 second
+    }
+
+    copyToClipboardCredDefId(text: string) {
+        this.copiedText = text;
+        this.clipboard.copy(text);
+        this.copiedCredDefId = true;
+        setTimeout(() => {
+            this.copiedCredDefId = false;
         }, 500); // 1 second
     }
 

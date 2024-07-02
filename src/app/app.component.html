@@ -27,7 +27,7 @@
         <mat-expansion-panel *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)">
             <mat-expansion-panel-header>
                 <mat-panel-title>
-                    Login Schema
+                    Issue Login Credential
                 </mat-panel-title>
             </mat-expansion-panel-header>
             <mat-card style="margin-bottom: 20px;">
@@ -36,10 +36,11 @@
                     <!-- <mat-card-subtitle>{{schema.id}}</mat-card-subtitle> -->
                     <mat-card-subtitle>Schema ID: {{federationLoginSchema.schemaID}}</mat-card-subtitle>
                     <button mat-icon-button
-                        (click)="copyToClipboard(federationLoginSchema.schemaID); scrollToCredDefCreationForm()">
+                        (click)="copyToClipboardSchemaId(federationLoginSchema.schemaID); scrollToCredDefCreationForm()">
                         <mat-icon
-                            *ngIf="!copied || federationLoginSchema.schemaID != copiedText">content_copy</mat-icon>
-                        <mat-icon *ngIf="copied && federationLoginSchema.schemaID == copiedText">check</mat-icon>
+                            *ngIf="!copiedSchemaID || federationLoginSchema.schemaID != copiedText">content_copy</mat-icon>
+                        <mat-icon
+                            *ngIf="copiedSchemaID && federationLoginSchema.schemaID == copiedText">check</mat-icon>
                     </button>
                     <mat-card-subtitle *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)">CredDef ID:
                         {{credentialDefinitions.get(federationLoginSchema.schemaID)?.credDefId}}</mat-card-subtitle>
@@ -234,19 +235,21 @@
                 <mat-card-title>{{schema.name}}</mat-card-title>
                 <!-- <mat-card-subtitle>{{schema.id}}</mat-card-subtitle> -->
                 <mat-card-subtitle>Schema ID: {{schema.schemaID}}<button mat-icon-button
-                        style="transform: scale(.7);  margin-top: -15px;"
-                        (click)="copyToClipboard(schema.schemaID); scrollToCredDefCreationForm()">
-                        <mat-icon *ngIf="!copied || schema.schemaID != copiedText">content_copy</mat-icon>
-                        <mat-icon *ngIf="copied && schema.schemaID == copiedText">check</mat-icon>
+                        style="transform: scale(.7) translateY(8px); margin-top: -15px;"
+                        (click)="copyToClipboardSchemaId(schema.schemaID); scrollToCredDefCreationForm()">
+                        <mat-icon *ngIf="!copiedSchemaID || schema.schemaID != copiedText">content_copy</mat-icon>
+                        <mat-icon *ngIf="copiedSchemaID && schema.schemaID == copiedText">check</mat-icon>
                     </button></mat-card-subtitle>
 
                 <mat-card-subtitle *ngIf="credentialDefinitions.get(schema.schemaID)">CredDef ID:
                     {{credentialDefinitions.get(schema.schemaID)?.credDefId}}
                     <button *ngIf="credentialDefinitions.get(schema.schemaID)" mat-icon-button
-                        style="transform: scale(.7);  margin-top: -15px;"
-                        (click)="copyToClipboard(credentialDefinitions.get(schema.schemaID)?.credDefId!); scrollToCredDefCreationForm()">
-                        <mat-icon *ngIf="!copied || schema.schemaID != copiedText">content_copy</mat-icon>
-                        <mat-icon *ngIf="copied && schema.schemaID == copiedText">check</mat-icon>
+                        style="transform: scale(.7) translateY(8px); margin-top: -15px;"
+                        (click)="copyToClipboardCredDefId(credentialDefinitions.get(schema.schemaID)?.credDefId!)">
+                        <mat-icon
+                            *ngIf="!copiedCredDefId || credentialDefinitions.get(schema.schemaID)?.credDefId! != copiedText">content_copy</mat-icon>
+                        <mat-icon
+                            *ngIf="copiedCredDefId && credentialDefinitions.get(schema.schemaID)?.credDefId! == copiedText">check</mat-icon>
                     </button></mat-card-subtitle>
                 <mat-card-subtitle *ngIf="!credentialDefinitions.get(schema.schemaID)" style="color: red">Has no
                     CredDefId</mat-card-subtitle>
