@@ -157,8 +157,10 @@ export class AppComponent {
     }
 
     async updateOrgs() {
+        if (!this.activeOCMConfig.orgsAPI) return;
+
         return new Promise((resolve, reject) => {
-            this.http.get<any>(environment.orgsAPI, {}).subscribe({
+            this.http.get<any>(this.activeOCMConfig.orgsAPI, {}).subscribe({
                 next: (response) => {
                     console.log(response);
 

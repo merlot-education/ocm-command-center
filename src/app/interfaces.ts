@@ -4,6 +4,7 @@ export interface OCMConfig {
     connectionManagerURL: string;
     proofManagerURL: string;
     loginSchemaId: string;
+    orgsAPI: string;
 }
 
 export interface Schema {
