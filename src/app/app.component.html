@@ -33,17 +33,31 @@
             <mat-card style="margin-bottom: 20px;">
                 <mat-card-header>
                     <mat-card-title>{{federationLoginSchema.name}}</mat-card-title>
-                    <!-- <mat-card-subtitle>{{schema.id}}</mat-card-subtitle> -->
-                    <mat-card-subtitle>Schema ID: {{federationLoginSchema.schemaID}}</mat-card-subtitle>
-                    <button mat-icon-button
-                        (click)="copyToClipboardSchemaId(federationLoginSchema.schemaID); scrollToCredDefCreationForm()">
-                        <mat-icon
-                            *ngIf="!copiedSchemaID || federationLoginSchema.schemaID != copiedText">content_copy</mat-icon>
-                        <mat-icon
-                            *ngIf="copiedSchemaID && federationLoginSchema.schemaID == copiedText">check</mat-icon>
-                    </button>
-                    <mat-card-subtitle *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)">CredDef ID:
-                        {{credentialDefinitions.get(federationLoginSchema.schemaID)?.credDefId}}</mat-card-subtitle>
+                    <mat-card-subtitle>Schema ID: {{federationLoginSchema.schemaID}}<button mat-icon-button
+                            style="transform: scale(.7) translateY(8px); margin-top: -15px;"
+                            (click)="copyToClipboardSchemaId(federationLoginSchema.schemaID); scrollToCredDefCreationForm()">
+                            <mat-icon
+                                *ngIf="!copiedSchemaID || federationLoginSchema.schemaID != copiedText">content_copy</mat-icon>
+                            <mat-icon
+                                *ngIf="copiedSchemaID && federationLoginSchema.schemaID == copiedText">check</mat-icon>
+                        </button></mat-card-subtitle>
+                    <br>
+                    <mat-card-subtitle>
+                        <div *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)?.length">
+                            <div *ngFor="let credDef of credentialDefinitions.get(federationLoginSchema.schemaID)">
+                                CredDef ID:
+                                {{credDef.credDefId}}
+                                <button *ngIf="credentialDefinitions.get(federationLoginSchema.schemaID)"
+                                    mat-icon-button style="transform: scale(.7) translateY(8px); margin-top: -15px;"
+                                    (click)="copyToClipboardCredDefId(credDef.credDefId)">
+                                    <mat-icon
+                                        *ngIf="!copiedCredDefId || credDef.credDefId != copiedText">content_copy</mat-icon>
+                                    <mat-icon
+                                        *ngIf="copiedCredDefId && credDef.credDefId == copiedText">check</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </mat-card-subtitle>
                     <mat-card-subtitle *ngIf="!credentialDefinitions.get(federationLoginSchema.schemaID)"
                         style="color: red">Has no
                         CredDefId</mat-card-subtitle>
@@ -98,6 +112,17 @@
                                         </mat-form-field>
                                     </div>
                                 </div>
+
+                                <mat-form-field>
+                                    <mat-label>Credential Definition ID</mat-label>
+                                    <mat-select formControlName="credDefId" required>
+                                        <mat-option
+                                            *ngFor="let credDef of credentialDefinitions.get(federationLoginSchema.schemaID)"
+                                            [value]="credDef.credDefId">{{
+                                            credDef.credDefId
+                                            }}</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
 
                                 <button mat-raised-button type="submit">Issue Credential</button>
 
@@ -240,17 +265,25 @@
                         <mat-icon *ngIf="!copiedSchemaID || schema.schemaID != copiedText">content_copy</mat-icon>
                         <mat-icon *ngIf="copiedSchemaID && schema.schemaID == copiedText">check</mat-icon>
                     </button></mat-card-subtitle>
+                <br>
+                <mat-card-subtitle>
+                    <div *ngIf="credentialDefinitions.get(schema.schemaID)?.length">
+                        <div *ngFor="let credDef of credentialDefinitions.get(schema.schemaID)">
+                            CredDef ID:
+                            {{credDef.credDefId}}
+                            <button *ngIf="credentialDefinitions.get(schema.schemaID)" mat-icon-button
+                                style="transform: scale(.7) translateY(8px); margin-top: -15px;"
+                                (click)="copyToClipboardCredDefId(credDef.credDefId)">
+                                <mat-icon
+                                    *ngIf="!copiedCredDefId || credDef.credDefId != copiedText">content_copy</mat-icon>
+                                <mat-icon *ngIf="copiedCredDefId && credDef.credDefId == copiedText">check</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </mat-card-subtitle>
 
-                <mat-card-subtitle *ngIf="credentialDefinitions.get(schema.schemaID)">CredDef ID:
-                    {{credentialDefinitions.get(schema.schemaID)?.credDefId}}
-                    <button *ngIf="credentialDefinitions.get(schema.schemaID)" mat-icon-button
-                        style="transform: scale(.7) translateY(8px); margin-top: -15px;"
-                        (click)="copyToClipboardCredDefId(credentialDefinitions.get(schema.schemaID)?.credDefId!)">
-                        <mat-icon
-                            *ngIf="!copiedCredDefId || credentialDefinitions.get(schema.schemaID)?.credDefId! != copiedText">content_copy</mat-icon>
-                        <mat-icon
-                            *ngIf="copiedCredDefId && credentialDefinitions.get(schema.schemaID)?.credDefId! == copiedText">check</mat-icon>
-                    </button></mat-card-subtitle>
+
+
                 <mat-card-subtitle *ngIf="!credentialDefinitions.get(schema.schemaID)" style="color: red">Has no
                     CredDefId</mat-card-subtitle>
             </mat-card-header>
@@ -270,20 +303,37 @@
                         </mat-expansion-panel-header>
                         <form *ngIf="credentialDefinitions.get(schema.schemaID)"
                             [formGroup]="issuanceForms[schema.schemaID]" (ngSubmit)="onIssuanceFormSubmit(schema)">
+
                             <mat-form-field>
                                 <mat-label>Comment</mat-label>
                                 <input matInput formControlName="comment" required>
                             </mat-form-field>
 
                             <div formArrayName="attributes">
-                                <div *ngFor="let attribute of getAttributes(schema.schemaID).controls; let i = index"
-                                    [formGroupName]="i">
+                                <div *ngFor="let attribute of getAttributes(schema.schemaID).controls; let I = index"
+                                    [formGroupName]="I">
                                     <mat-form-field>
                                         <mat-label>{{ attribute.get('name')?.value }}</mat-label>
-                                        <input matInput formControlName="value" required>
+
+                                        <!-- Conditionally render input or select based on the attribute name -->
+                                        <ng-container [ngSwitch]="attribute.get('name')?.value">
+                                            <!-- currently there is just one option here -->
+                                            <input *ngSwitchDefault matInput formControlName="value" required>
+                                        </ng-container>
                                     </mat-form-field>
                                 </div>
                             </div>
+
+                            <mat-form-field>
+                                <mat-label>Credential Definition ID</mat-label>
+                                <mat-select formControlName="credDefId" required>
+                                    <mat-option *ngFor="let credDef of credentialDefinitions.get(schema.schemaID)"
+                                        [value]="credDef.credDefId">{{
+                                        credDef.credDefId
+                                        }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
 
                             <button mat-raised-button type="submit">Issue Credential</button>
 

@@ -13,7 +13,14 @@ import { CredentialDefinition, OCMConfig, Schema } from './interfaces';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, interval, takeUntil, takeWhile } from 'rxjs';
+import {
+    Observable,
+    Subject,
+    fromEventPattern,
+    interval,
+    takeUntil,
+    takeWhile,
+} from 'rxjs';
 import { Clipboard } from '@angular/cdk/clipboard';
 
 import { MatInputModule } from '@angular/material/input';
@@ -77,7 +84,7 @@ export class AppComponent {
 
     schemas: Schema[] = [];
     schemasToDisplay: Schema[] = [];
-    credentialDefinitions: Map<string, CredentialDefinition> = new Map();
+    credentialDefinitions: Map<string, CredentialDefinition[]> = new Map();
 
     error: any;
     copiedSchemaID = false;
@@ -151,8 +158,8 @@ export class AppComponent {
 
         this.showProgress = true;
         await this.updateOrgs();
-        await this.updateSchemas();
         await this.updateCredentialDefinitions();
+        await this.updateSchemas();
         this.showProgress = false;
     }
 
@@ -394,9 +401,10 @@ export class AppComponent {
                 formValue.version,
                 attributes
             ).subscribe({
-                next: (response) => {
+                next: async (response) => {
                     console.log('Schema created successfully', response);
-                    this.updateSchemas();
+                    await this.updateCredentialDefinitions();
+                    await this.updateSchemas();
                     this.schemaForm.reset();
                     this.showProgress = false;
                     this.resetSchemaForm();
@@ -461,20 +469,41 @@ export class AppComponent {
                             const filteredAttributes = schema.attribute.filter(
                                 (attr) => attr.name !== 'expirationDate'
                             );
-                            const formGroup = this.fb.group({
+
+                            let defaultCredDefId = `If you can read this, this form won't work...`;
+                            let credDefIds = this.credentialDefinitions.get(
+                                schema.schemaID
+                            );
+
+                            if (credDefIds?.length) {
+                                defaultCredDefId = credDefIds[0].credDefId;
+                            }
+
+                            let formGroup = this.fb.group({
                                 comment: [
                                     'Issued via the OCM Command Center',
                                     Validators.required,
                                 ],
                                 attributes: this.fb.array(
-                                    filteredAttributes.map((attr) =>
-                                        this.fb.group({
-                                            name: attr.name,
-                                            value: ['', Validators.required],
-                                        })
-                                    )
+                                    filteredAttributes.map((attr) => {
+                                        switch (attr.name) {
+                                            default:
+                                                return this.fb.group({
+                                                    name: attr.name,
+                                                    value: [
+                                                        '',
+                                                        Validators.required,
+                                                    ],
+                                                });
+                                        }
+                                    })
                                 ),
+                                credDefId: [
+                                    defaultCredDefId,
+                                    Validators.required,
+                                ],
                             });
+
                             this.issuanceForms[schema.schemaID] = formGroup;
 
                             if (
@@ -586,6 +615,10 @@ export class AppComponent {
                                             }
                                         })
                                     ),
+                                    credDefId: [
+                                        defaultCredDefId,
+                                        Validators.required,
+                                    ],
                                 });
                                 this.issuanceForms[schema.schemaID] = formGroup;
                             }
@@ -637,10 +670,10 @@ export class AppComponent {
                 formValue.isAutoIssue,
                 formValue.expiryHours
             ).subscribe({
-                next: (response) => {
+                next: async (response) => {
                     console.log('Schema created successfully', response);
-                    this.updateSchemas();
-                    this.updateCredentialDefinitions();
+                    await this.updateCredentialDefinitions();
+                    await this.updateSchemas();
                     this.credentialDefinitionForm.reset();
                     this.showProgress = false;
                     this.resetCredDefForm();
@@ -693,10 +726,23 @@ export class AppComponent {
                     if (response.statusCode == 200) {
                         response.data.records.forEach(
                             (credDef: CredentialDefinition) => {
-                                this.credentialDefinitions.set(
-                                    credDef.schemaID,
-                                    credDef
+                                let defs = this.credentialDefinitions.get(
+                                    credDef.schemaID
                                 );
+
+                                if (defs?.length) {
+                                    defs.push(credDef);
+
+                                    this.credentialDefinitions.set(
+                                        credDef.schemaID,
+                                        defs
+                                    );
+                                } else {
+                                    this.credentialDefinitions.set(
+                                        credDef.schemaID,
+                                        [credDef]
+                                    );
+                                }
                             }
                         );
                     }
@@ -757,13 +803,12 @@ export class AppComponent {
 
         const form = this.issuanceForms[schema.schemaID];
 
-        let credDef = this.credentialDefinitions.get(schema.schemaID);
-
-        if (form.valid && this.connection && credDef) {
+        if (form.valid && this.connection) {
             const formValue = form.value;
+            console.warn(formValue);
             this.createCredentialOffer(
                 this.connection,
-                credDef.credDefId,
+                formValue.credDefId,
                 formValue.comment,
                 formValue.attributes
             ).subscribe({
