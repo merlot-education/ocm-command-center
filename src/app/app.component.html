@@ -395,7 +395,17 @@
 
 <div id="new-connection" *ngIf="connectionStatus != ''">
     <div id="status">
-        <qrcode [qrdata]="invitationUrl" [width]="512" [errorCorrectionLevel]="'M'"></qrcode>
+        <qrcode 
+            [cssClass]="'demoBorder'"
+            [margin]="4"
+            [imageSrc]="'./assets/merlot-pcm-opaque.png'"
+            [imageHeight]="150"
+            [imageWidth]="150"
+            [qrdata]="invitationUrl" 
+            [width]="512" 
+            [errorCorrectionLevel]="'M'"
+            >
+        </qrcode>
         <h1 *ngIf="invitationUrl">Scan this code with your PCM app</h1>
         <h3>{{connectionStatus}}</h3>
     </div>
