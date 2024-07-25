@@ -1,4 +1,4 @@
-name: Build
+name: Quality Assurance
 
 on:
   workflow_dispatch:
