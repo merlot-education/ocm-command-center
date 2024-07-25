@@ -177,6 +177,38 @@ export class AppComponent {
         this.showProgress = false;
     }
 
+    processOrgaCredential(credentials: any) {
+        if (Array.isArray(credentials)) {
+            for (let vc of credentials) {
+                if (
+                    !Array.isArray(vc.credentialSubject) &&
+                    vc.credentialSubject.type ===
+                        'merlot:MerlotLegalParticipant'
+                ) {
+                    let organizationName =
+                        vc.credentialSubject[
+                            'merlot:legalName'
+                        ];
+                    this.organizations.push(organizationName);
+                    this.organizationMap.set(
+                        organizationName,
+                        vc.credentialSubject['id']
+                    );
+                }
+            }
+        } else {
+            let organizationName =
+                credentials.credentialSubject[
+                    'gax-trust-framework:legalName'
+                ]['@value'];
+            this.organizations.push(organizationName);
+            this.organizationMap.set(
+                organizationName,
+                credentials.credentialSubject['@id']
+            );
+        }
+    }
+
     async updateOrgs() {
         if (!this.activeOCMConfig.orgsAPI) return;
 
@@ -188,35 +220,7 @@ export class AppComponent {
                     response.content.forEach((element: any) => {
                         let credentials =
                             element.selfDescription.verifiableCredential;
-                        if (Array.isArray(credentials)) {
-                            for (let vc of credentials) {
-                                if (
-                                    !Array.isArray(vc.credentialSubject) &&
-                                    vc.credentialSubject.type ===
-                                        'merlot:MerlotLegalParticipant'
-                                ) {
-                                    let organizationName =
-                                        vc.credentialSubject[
-                                            'merlot:legalName'
-                                        ];
-                                    this.organizations.push(organizationName);
-                                    this.organizationMap.set(
-                                        organizationName,
-                                        vc.credentialSubject['id']
-                                    );
-                                }
-                            }
-                        } else {
-                            let organizationName =
-                                credentials.credentialSubject[
-                                    'gax-trust-framework:legalName'
-                                ]['@value'];
-                            this.organizations.push(organizationName);
-                            this.organizationMap.set(
-                                organizationName,
-                                credentials.credentialSubject['@id']
-                            );
-                        }
+                        this.processOrgaCredential(credentials);
                     });
 
                     this.organization = this.organizations[0];
@@ -465,6 +469,97 @@ export class AppComponent {
         });
     }
 
+    handleLoginAttributes(attr: any) {
+        const randomUserNumber = Math.floor(
+            Math.random() * 100000
+        ).toString();
+        
+        switch (attr.name) {
+            case 'Vorname':
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        `Tester`,
+                        Validators.required,
+                    ],
+                });
+            case 'Nachname':
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        `Number ${randomUserNumber}`,
+                        Validators.required,
+                    ],
+                });
+            case 'ID':
+            case 'sub':   
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        `user${randomUserNumber}@merlot.dev`,
+                        Validators.required,
+                    ],
+                });
+            case 'subjectDID':
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        `did:number:${randomUserNumber}`,
+                        Validators.required,
+                    ],
+                });
+            case 'iss':
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        `ocm@merlot.dev`,
+                        Validators.required,
+                    ],
+                });
+            case 'auth_time':
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        new Date().toISOString(),
+                        Validators.required,
+                    ],
+                });
+            case 'Organisation':
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        this
+                            .organizations[0],
+                        Validators.required,
+                    ],
+                });
+            case 'Role':
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        this.roles[0],
+                        Validators.required,
+                    ],
+                });
+            case 'issuerDID':
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        'did:mail:ocm@merlot.dev',
+                        Validators.required,
+                    ],
+                });
+            default:
+                return this.fb.group({
+                    name: attr.name,
+                    value: [
+                        '',
+                        Validators.required,
+                    ],
+                });
+        };
+    }
+
     async updateSchemas() {
         return new Promise((resolve, reject) => {
             this.listSchemas().subscribe({
@@ -522,9 +617,6 @@ export class AppComponent {
                                 schema.schemaID
                             ) {
                                 this.federationLoginSchema = schema;
-                                const randomUserNumber = Math.floor(
-                                    Math.random() * 100000
-                                ).toString();
 
                                 const formGroup = this.fb.group({
                                     comment: [
@@ -532,92 +624,7 @@ export class AppComponent {
                                         Validators.required,
                                     ],
                                     attributes: this.fb.array(
-                                        filteredAttributes.map((attr) => {
-                                            switch (attr.name) {
-                                                case 'Vorname':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            `Tester`,
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'Nachname':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            `Number ${randomUserNumber}`,
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'ID':
-                                                case 'sub':   
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            `user${randomUserNumber}@merlot.dev`,
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'subjectDID':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            `did:number:${randomUserNumber}`,
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'iss':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            `ocm@merlot.dev`,
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'auth_time':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            new Date().toISOString(),
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'Organisation':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            this
-                                                                .organizations[0],
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'Role':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            this.roles[0],
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'issuerDID':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            'did:mail:ocm@merlot.dev',
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                default:
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            '',
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                            }
-                                        })
+                                        filteredAttributes.map((attr) => this.handleLoginAttributes(attr))
                                     ),
                                     credDefId: [
                                         defaultCredDefId,
