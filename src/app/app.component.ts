@@ -27,12 +27,10 @@ import { RouterOutlet } from '@angular/router';
 import { environment } from '../environments/environment';
 import { CredentialDefinition, OCMConfig, Schema } from './interfaces';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
-import { HttpClient } from '@angular/common/http';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 import {
     Observable,
     Subject,
-    fromEventPattern,
     interval,
     takeUntil,
     takeWhile,
@@ -222,12 +220,12 @@ export class AppComponent {
                     });
 
                     this.organization = this.organizations[0];
-                    return resolve(1);
+                    resolve(1);
                 },
                 error: (e) => {
                     console.error(e);
                     this.error = e;
-                    return reject(e);
+                    reject(e);
                 },
             });
         });
@@ -468,7 +466,7 @@ export class AppComponent {
     }
 
     async updateSchemas() {
-        new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             this.listSchemas().subscribe({
                 next: async (response) => {
                     if (response.statusCode == 200) {
@@ -643,20 +641,20 @@ export class AppComponent {
                         await this.updateSchemasToDisplay();
                     }
 
-                    return resolve(0);
+                    resolve(0);
                 },
                 error: (e) => {
                     console.error(e);
                     this.error = e;
                     this.schemas = [];
-                    return reject(e);
+                    reject(e);
                 },
             });
         });
     }
 
     updateSchemasToDisplay() {
-        new Promise((resolve, reject) => {
+        return new Promise((resolve, _) => {
             this.schemasToDisplay = [];
             for (
                 let i = this.paginatorPageIndex * this.paginatorPageSize;
@@ -668,7 +666,7 @@ export class AppComponent {
                 this.schemasToDisplay.push(this.schemas[i]);
             }
 
-            return resolve(1);
+            resolve(1);
         });
     }
 
@@ -735,7 +733,7 @@ export class AppComponent {
     }
 
     async updateCredentialDefinitions() {
-        new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             this.credentialDefinitions = new Map();
             this.listCredentialDefinitions().subscribe({
                 next: (response) => {
@@ -762,13 +760,13 @@ export class AppComponent {
                             }
                         );
                     }
-                    return resolve(1);
+                    resolve(1);
                 },
                 error: (e) => {
                     console.error(e);
                     this.error = e;
                     this.credentialDefinitions = new Map();
-                    return reject(e);
+                    reject(e);
                 },
             });
         });
@@ -894,20 +892,10 @@ export class AppComponent {
     requestPresentationForSchema(schema: Schema) {
         console.log(schema);
 
-        // let credDef = this.credentialDefinitions.get(schema.schemaID);
-
-        // if (!credDef) {
-        //     this.error = {
-        //         message: 'No credential definition for this schema.',
-        //     };
-        //     return;
-        // }
-
         let attributes = schema.attribute.map((att) => {
             return {
                 attributeName: att.name,
                 schemaId: schema.schemaID,
-                // credentialDefId: credDef.credDefId,
             };
         });
 
