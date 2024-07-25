@@ -473,7 +473,7 @@ export class AppComponent {
                         this.paginatorLength = response.data.count;
                         this.schemas = response.data.records;
                         console.log(this.schemas);
-                        this.schemas = this.schemas.sort(
+                        this.schemas.sort(
                             (a, b) =>
                                 new Date(b.createdDate).getTime() -
                                 new Date(a.createdDate).getTime()
@@ -499,18 +499,15 @@ export class AppComponent {
                                     Validators.required,
                                 ],
                                 attributes: this.fb.array(
-                                    filteredAttributes.map((attr) => {
-                                        switch (attr.name) {
-                                            default:
-                                                return this.fb.group({
-                                                    name: attr.name,
-                                                    value: [
-                                                        '',
-                                                        Validators.required,
-                                                    ],
-                                                });
-                                        }
-                                    })
+                                    filteredAttributes.map((attr) => 
+                                        this.fb.group({
+                                            name: attr.name,
+                                            value: [
+                                                '',
+                                                Validators.required,
+                                            ],
+                                        })
+                                    )
                                 ),
                                 credDefId: [
                                     defaultCredDefId,
@@ -554,14 +551,7 @@ export class AppComponent {
                                                         ],
                                                     });
                                                 case 'ID':
-                                                    return this.fb.group({
-                                                        name: attr.name,
-                                                        value: [
-                                                            `user${randomUserNumber}@merlot.dev`,
-                                                            Validators.required,
-                                                        ],
-                                                    });
-                                                case 'sub':
+                                                case 'sub':   
                                                     return this.fb.group({
                                                         name: attr.name,
                                                         value: [

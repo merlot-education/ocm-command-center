@@ -252,7 +252,6 @@
         <mat-card style="margin-bottom: 20px;" *ngIf="schema">
             <mat-card-header>
                 <mat-card-title>{{schema.name}}</mat-card-title>
-                <!-- <mat-card-subtitle>{{schema.id}}</mat-card-subtitle> -->
                 <mat-card-subtitle>Schema ID: {{schema.schemaID}}<button mat-icon-button
                         style="transform: scale(.7) translateY(8px); margin-top: -15px;"
                         (click)="copyToClipboardSchemaId(schema.schemaID); scrollToCredDefCreationForm()">
