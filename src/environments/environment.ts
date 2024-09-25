@@ -37,7 +37,7 @@ export const environment = {
                 'https://ocm.dev.merlot-education.eu/connection/v1/',
             proofManagerURL: 'https://ocm.dev.merlot-education.eu/proof/v1/',
             loginSchemaId:
-                'K8j8nFTijJTCsFwrRNE3Df:2:MerlotLoginDev250624:1.0.0',
+                'K8j8nFTijJTCsFwrRNE3Df:2:MerlotLoginDev250924:1.0',
             orgsAPI:
                 'https://api.dev.merlot-education.eu/organisations/?page=0&size=50',
         },
