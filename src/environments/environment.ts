@@ -42,6 +42,18 @@ export const environment = {
                 'https://api.dev.merlot-education.eu/organisations/?page=0&size=50',
         },
         {
+            name: 'imc-ocm-dev',
+            attestationManagerURL:
+                'https://ocm.dev.imc-merlot-education.eu/attestation/v1/',
+            connectionManagerURL:
+                'https://ocm.dev.imc-merlot-education.eu/connection/v1/',
+            proofManagerURL: 'https://ocm.dev.imc-merlot-education.eu/proof/v1/',
+            loginSchemaId:
+                'CgG9Q9ofYeVwVufsmgYFaj:2:IMCLoginDev301024:1.0.0',
+            orgsAPI:
+                'https://api.dev.merlot-education.eu/organisations/?page=0&size=50',
+        },
+        {
             name: 'blabby-agent',
             attestationManagerURL:
                 'https://blabby-agent.jumpy.dev/attestation/',
